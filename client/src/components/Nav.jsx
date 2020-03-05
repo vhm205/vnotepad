@@ -1,0 +1,55 @@
+import React, { Fragment } from 'react';
+import Cookies from 'universal-cookie';
+import { NavLink } from 'react-router-dom';
+import { httpLogout } from './Service/Service';
+
+const Nav = () => {
+    const cookies = new Cookies()
+
+    const logout = async e => {
+        e.preventDefault()
+
+        const token = cookies.get('token')
+        if(token){
+            await httpLogout(token)
+            cookies.remove('token')
+            window.location.href = '/login'
+        }
+    }
+
+    return (
+        <div>
+            <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+                <a className="navbar-brand" href="/">Home</a>
+                <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                    <span className="navbar-toggler-icon" />
+                </button>
+                <div className="collapse navbar-collapse d-flex" id="navbarNavDropdown">
+                    <ul className="navbar-nav ml-auto">
+                        {!cookies.get('token') ? (
+                            <Fragment>
+                                <li className="nav-item">
+                                    <NavLink to="/login" className="nav-link">Login</NavLink>
+                                </li>
+                                <li className="nav-item">
+                                    <NavLink to="/register" className="nav-link">Register</NavLink>
+                                </li>
+                            </Fragment>
+                        ) : (
+                            <Fragment>
+                                <li className="nav-item">
+                                    <NavLink to="/profile" className="nav-link">Profile</NavLink>
+                                </li>
+                                <li className="nav-item">
+                                    <a href="/" className="nav-link" onClick={logout}>Logout</a>
+                                </li>
+                            </Fragment>
+                        )}
+                     </ul>
+                </div>
+            </nav>
+        </div>
+    );
+}
+
+export default Nav;
