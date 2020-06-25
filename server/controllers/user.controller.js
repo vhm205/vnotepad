@@ -1,64 +1,64 @@
-const User = require('../models/User.model')
-const bcrypt = require('bcryptjs')
+const UserModel = require('../models/User.model');
+const bcrypt = require('bcryptjs');
 
-profile = (req, res) => {
-    res.json({
-        body: req.user,
-        token: req.token
-    })
-}
+const profile = (req, res) => {
+	res.json({
+		body: req.user,
+		token: req.token,
+	});
+};
 
-register = async (req, res) => {
-    try {
-        const user = new User(req.body)
-        const token = await user.generateToken()
-        await user.save()
-        res.status(201).send({ user, token })
-    } catch (error) {
-        res.status(400).send(error)
-    }
-}
+const register = async (req, res) => {
+	try {
+		const user = new UserModel(res.locals.body);
+		await user.save();
+		res.status(201).json({ msg: 'Sign up successfully' });
+	} catch (error) {
+		console.log(error);
 
-login = async (req, res) => {
-    try {
-        const { email, password } = req.body
-        const user = await User.findOne({ email })
-        if(!user) throw new Error({ error: 'Invalid email login credentials' })
+		res.status(400).json(error);
+	}
+};
 
-        const comparePassword = await bcrypt.compare(password, user.password)
-        if(!comparePassword) throw new Error({ error: 'Invalid password login credentials' })
+const login = async (req, res) => {
+	try {
+		const { password, user } = res.locals.body;
 
-        const token = await user.generateToken()
-        res.send({ user, token })
-    } catch (error) {
-        res.status(400).send(error)
-    }
-}
+		const comparePassword = await bcrypt.compare(password, user.password);
+		if (!comparePassword)
+			return res.status(400).json({ msg: 'Password incorrect' });
 
-logout = async (req, res) => {
-    try {
-        req.user.tokens = req.user.tokens.filter(t => t.token !== req.token)
-        await req.user.save()
-        res.sendStatus(204) 
-    } catch (error) {
-        res.status(500).send(error)
-    }
-}
+		const token = await user.generateToken();
+		return res.json({ user, token });
+	} catch (error) {
+		return res.status(400).json(error);
+	}
+};
 
-logoutall = async (req, res) => {
-    try {
-        req.user.tokens = []
-        await req.user.save()
-        res.sendStatus(204) 
-    } catch (error) {
-        res.status(500).send(error)
-    }
-}
+const logout = async (req, res) => {
+	try {
+		req.user.tokens = req.user.tokens.filter((t) => t.token !== req.token);
+		await req.user.save();
+		res.sendStatus(204);
+	} catch (error) {
+		res.status(500).json(error);
+	}
+};
+
+const logoutAll = async (req, res) => {
+	try {
+		req.user.tokens = [];
+		await req.user.save();
+		res.sendStatus(204);
+	} catch (error) {
+		res.status(500).json(error);
+	}
+};
 
 module.exports = {
-    profile,
-    register,
-    login,
-    logout,
-    logoutall
-}
+	profile,
+	register,
+	login,
+	logout,
+	logoutAll,
+};
