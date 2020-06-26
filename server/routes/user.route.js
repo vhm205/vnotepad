@@ -6,8 +6,10 @@ const userAuth = require('../auth/user.auth');
 
 router.post('/register', registerValid.validate, userController.register);
 router.post('/login', loginValid.validate, userController.login);
-router.get('/me', userAuth.authUser, userController.profile);
-router.post('/me/logout', userAuth.authUser, userController.logout);
-router.post('/me/logoutAll', userAuth.authUser, userController.logoutAll);
+
+router.get('/profile', userAuth.authUser, userController.profile);
+router.post('/logout', userAuth.authUser, userController.logout);
+router.post('/logoutAll', userAuth.authUser, userController.logoutAll);
+router.get('/refresh-token', userAuth.authUser, userController.refreshToken);
 
 module.exports = router;

@@ -2,10 +2,7 @@ const UserModel = require('../models/User.model');
 const bcrypt = require('bcryptjs');
 
 const profile = (req, res) => {
-	res.json({
-		body: req.user,
-		token: req.token,
-	});
+	res.status(200).json({ user: res.locals.body.user });
 };
 
 const register = async (req, res) => {
@@ -14,8 +11,6 @@ const register = async (req, res) => {
 		await user.save();
 		res.status(201).json({ msg: 'Sign up successfully' });
 	} catch (error) {
-		console.log(error);
-
 		res.status(400).json(error);
 	}
 };
@@ -28,8 +23,14 @@ const login = async (req, res) => {
 		if (!comparePassword)
 			return res.status(400).json({ msg: 'Password incorrect' });
 
+		const refreshToken = await user.generateRefreshToken();
 		const token = await user.generateToken();
-		return res.json({ user, token });
+
+		return res.json({
+			msg: 'Login successfully',
+			refreshToken: refreshToken,
+			token: token,
+		});
 	} catch (error) {
 		return res.status(400).json(error);
 	}
@@ -37,21 +38,41 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
 	try {
-		req.user.tokens = req.user.tokens.filter((t) => t.token !== req.token);
-		await req.user.save();
-		res.sendStatus(204);
+		let { user, token: refreshToken } = res.locals.body;
+		user = await UserModel.findUserById(user._id);
+		user.tokens = user.tokens.filter((t) => t.token !== refreshToken);
+		await user.save();
+
+		return res.sendStatus(204);
 	} catch (error) {
-		res.status(500).json(error);
+		return res.status(500).json(error);
 	}
 };
 
 const logoutAll = async (req, res) => {
 	try {
-		req.user.tokens = [];
-		await req.user.save();
-		res.sendStatus(204);
+		const { user } = res.locals.body;
+		user = await UserModel.findUserById(user._id);
+		user.tokens = [];
+		await user.save();
+
+		return res.sendStatus(204);
 	} catch (error) {
-		res.status(500).json(error);
+		return res.status(500).json(error);
+	}
+};
+
+const refreshToken = async (req, res) => {
+	try {
+		const { token: refreshToken } = res.locals.body;
+		const user = await UserModel.checkTokenExists(refreshToken);
+		if (!user)
+			return res.status(400).json({ msg: 'Refresh token is not exists' });
+
+		const token = await user.generateToken();
+		return res.json({ token: token });
+	} catch (error) {
+		return res.status(400).json(error);
 	}
 };
 
@@ -61,4 +82,5 @@ module.exports = {
 	login,
 	logout,
 	logoutAll,
+	refreshToken,
 };

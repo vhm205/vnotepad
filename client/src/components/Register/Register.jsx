@@ -1,131 +1,138 @@
 import React, { useState } from 'react';
-import Swal from 'sweetalert2';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
-import { Copyright, alertInfo, useStylesForSignUp } from '../Styles';
-import { httpRegister } from '../Service/Service';
-import { NavLink } from 'react-router-dom';
-import { isEmail, isEmpty  } from 'validator';
+import {
+	Avatar,
+	Button,
+	CssBaseline,
+	TextField,
+	Link,
+	Grid,
+	Box,
+	Typography,
+	Container,
+} from '@material-ui/core';
+import { LockOutlined } from '@material-ui/icons';
+import { Alert } from '@material-ui/lab';
+
+import { Copyright, useStylesForSignUp } from '../Styles';
+import { api } from '../Service/Service';
+import { NavLink, useHistory } from 'react-router-dom';
+import registerValid from '../Validation/RegisterValid';
 
 const Register = () => {
-    const classes = useStylesForSignUp()
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPass] = useState('')
-    const [error, setError] = useState([])
+	const classes = useStylesForSignUp();
+	const [username, setUsername] = useState('');
+	const [email, setEmail] = useState('');
+	const [password, setPass] = useState('');
+	const [repass, setRepass] = useState('');
+	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
+	const history = useHistory();
 
-    const clickRegister = async e => {
-      const stateCopy = {...error}
+	const onSignUp = async (e) => {
+		e.preventDefault();
 
-      stateCopy.email = !isEmail(email) ? 'Invalid email format' : ''
-      stateCopy.name = isEmpty(name) ? 'This field is required' : ''
-      stateCopy.password = password.length < 6 ? 'Password must be at least 6 characters long' : ''
+		try {
+			const valid = await registerValid.validateAsync({
+				username,
+				email,
+				password,
+				repass,
+			});
+			await api.post('/register', valid);
 
-      setError(stateCopy)
+			setSuccess('Sign up successfully');
+			setError('');
+			setTimeout(() => {
+				history.push('/login');
+			}, 2000);
+		} catch (error) {
+			if (error.response) {
+				setError(error.response.data.msg);
+			} else {
+				setError(
+					error.message === '"repass" must be [ref:password]'
+						? 'Password is not matched'
+						: error.message
+				);
+			}
+			setSuccess('');
+		}
+	};
 
-      for (const [, value] of Object.entries(stateCopy)) {
-        if(value !== '') return
-      }
-
-      try {
-        await httpRegister({name, email, password})
-
-        alertInfo('Infomation', 'Register done!!', 'info')
-        setName('')
-        setEmail('')
-        setPass('')
-      } catch (error) {
-        alertInfo('Error', 'Register failse!!', 'error')
-      }
-    }
-
-    return (
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
-        <div className={classes.paper}>
-          <Avatar className={classes.avatar}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign Up
-          </Typography>
-          <form className={classes.form}>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="name"
-              label="Your name"
-              name="name"
-              autoComplete="name"
-              autoFocus
-              value={name}
-              onChange={e => setName(e.target.value)}
-              helperText={error.name}
-              error={error.name && error.name.length > 0 ? true : false}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              helperText={error.email}
-              error={error.email && error.email.length > 0 ? true : false}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPass(e.target.value)}
-              helperText={error.password}
-              error={error.password && error.password.length > 0 ? true : false}
-            />
-            <Button
-              type="button"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-              onClick={clickRegister}
-            >
-              Sign Up
-            </Button>
-            <Grid container>
-              <Grid item>
-                <NavLink to="/login">
-                  {"Have an account? Sign In"}
-                </NavLink>
-              </Grid>
-            </Grid>
-          </form>
-        </div>
-        <Box mt={8}>
-          <Copyright Typography={Typography} Link={Link} />
-        </Box>
-      </Container>
-    );
+	return (
+		<Container component="main" maxWidth="xs">
+			<CssBaseline />
+			<div className={classes.paper}>
+				<Avatar className={classes.avatar}>
+					<LockOutlined />
+				</Avatar>
+				<Typography component="h1" variant="h5">
+					Sign Up
+				</Typography>
+				<form className={classes.form}>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						label="Your name"
+						autoFocus
+						value={username}
+						onChange={(e) => setUsername(e.target.value)}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						label="Email Address"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						label="Password"
+						type="password"
+						value={password}
+						onChange={(e) => setPass(e.target.value)}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						label="Re-password"
+						type="password"
+						value={repass}
+						onChange={(e) => setRepass(e.target.value)}
+					/>
+					{error && <Alert severity="error">{error}</Alert>}
+					{success && <Alert severity="success">{success}</Alert>}
+					<Button
+						type="button"
+						fullWidth
+						variant="contained"
+						color="primary"
+						className={classes.submit}
+						onClick={onSignUp}
+					>
+						Sign Up
+					</Button>
+					<Grid container>
+						<Grid item>
+							<NavLink to="/login">{'Have an account? Sign In'}</NavLink>
+						</Grid>
+					</Grid>
+				</form>
+			</div>
+			<Box mt={8}>
+				<Copyright Typography={Typography} Link={Link} />
+			</Box>
+		</Container>
+	);
 };
 
 export default Register;

@@ -1,43 +1,34 @@
 import React, { Fragment } from 'react';
-import './App.css';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Login, Register, Profile, NavBar } from './components';
+import { useCookies } from 'react-cookie';
+
 import Container from '@material-ui/core/Container';
-import Cookies from 'universal-cookie';
-import Nav from './components/Nav';
-import Login from './components/Login/Login';
-import Register from './components/Register/Register';
-import Profile from './components/Profile/Profile';
 
-function App() {
-	const cookies = new Cookies()
-
+const App = () => {
+	const [cookies] = useCookies();
 	return (
-		<Container fixed={true}>
+		<Container fixed>
 			<Router>
-				<Nav />
-
+				<NavBar />
 				<Switch>
-					{!cookies.get('token') ? (
+					<Route path="/login" render={() => <Login />} />
+					<Route path="/register" render={() => <Register />} />
+					<Route path="/profile" render={() => <Profile />} />
+					{/* {!cookies.token ? (
 						<Fragment>
-							<Route path='/login'>
-								<Login />
-							</Route>
-
-							<Route path='/register'>
-								<Register />
-							</Route>
+							<Route path="/login" render={() => <Login />} />
+							<Route path="/register" render={() => <Register />} />
 						</Fragment>
 					) : (
 						<Fragment>
-							<Route path='/profile'>
-								<Profile />
-							</Route>
+							<Route path="/profile" render={() => <Profile />} />
 						</Fragment>
-					)}
+					)} */}
 				</Switch>
 			</Router>
 		</Container>
-  );
-}
+	);
+};
 
 export default App;

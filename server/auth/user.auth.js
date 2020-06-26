@@ -1,21 +1,23 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User.model');
+const UserModel = require('../models/User.model');
 
 module.exports.authUser = async (req, res, next) => {
-	const token = req.header('Authorization');
+	let token = req.header('Authorization') || req.params.access_token;
 	if (!token) return res.status(400).json({ msg: 'Token is required' });
 
-	const decoded = await jwt.verify(token, process.env.JWT_KEY);
+	if (token.startsWith('Bearer ')) {
+		token = token.split(' ')[1];
+	}
 
 	try {
-		const user = await User.findOne({
-			_id: decoded._id,
-			'tokens.token': token,
-		});
-		if (!user) return res.status(400).json({ msg: 'Cannot to find user' });
+		const decoded = await jwt.verify(token, process.env.JWT_KEY);
+		const user = await UserModel.findUserSafeById(decoded._id);
+		if (!user) return res.status(404).json({ msg: 'Cannot to find user' });
 
-		req.token = token;
-		req.user = user;
+		res.locals.body = {
+			token,
+			user,
+		};
 
 		next();
 	} catch (error) {

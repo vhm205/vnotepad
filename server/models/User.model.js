@@ -24,8 +24,8 @@ const userSchema = new mongoose.Schema(
 		},
 		tokens: [
 			{
+				_id: false,
 				token: {
-					_id: false,
 					type: String,
 					required: true,
 				},
@@ -45,27 +45,32 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.methods = {
-	async generateToken() {
+	async generateRefreshToken() {
 		const token = await jwt.sign({ _id: this._id }, process.env.JWT_KEY);
 		this.tokens = [...this.tokens, { token }];
 		await this.save();
 		return token;
 	},
+	async generateToken() {
+		const token = await jwt.sign({ _id: this._id }, process.env.JWT_KEY, {
+			expiresIn: '5m',
+		});
+		return token;
+	},
 };
 
 userSchema.statics = {
-	async findByCredentials(email, password) {
-		const user = await User.findOne({ email });
-		if (!user) throw new Error({ error: 'Invalid email login credentials' });
-
-		const comparePassword = await bcrypt.compare(password, user.password);
-		if (!comparePassword)
-			throw new Error({ error: 'Invalid password login credentials' });
-
-		return user;
-	},
 	checkUserExists(email) {
 		return this.findOne({ email });
+	},
+	findUserSafeById(id) {
+		return this.findOne({ _id: id }, { password: 0, tokens: 0 });
+	},
+	findUserById(id) {
+		return this.findOne({ _id: id }, { password: 0 });
+	},
+	checkTokenExists(token) {
+		return this.findOne({ 'tokens.token': token });
 	},
 };
 
