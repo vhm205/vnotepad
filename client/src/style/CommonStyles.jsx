@@ -1,6 +1,5 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Swal from 'sweetalert2';
 
 export const Copyright = ({ Typography, Link }) => {
 	return (
@@ -16,28 +15,6 @@ export const Copyright = ({ Typography, Link }) => {
 			{' ' + new Date().getFullYear() + '.'}
 		</Typography>
 	);
-};
-
-export const alertInfo = (
-	title,
-	text,
-	icon = 'info',
-	showConfirmButton = false,
-	timer = 1500
-) => {
-	return Swal.fire({
-		icon: icon,
-		title: title,
-		text: text,
-		showConfirmButton: showConfirmButton,
-		timer: timer,
-	});
-};
-
-export const setExpiresCookies = (exdays) => {
-	const date = new Date();
-	date.setTime(date.getTime() + exdays * 24 * 60 * 60 * 1000);
-	return date;
 };
 
 export const useStylesForProfile = makeStyles((theme) => ({
@@ -69,5 +46,43 @@ export const useStylesForSignUp = makeStyles((theme) => ({
 	},
 	submit: {
 		margin: theme.spacing(3, 0, 2),
+	},
+}));
+
+export const useCustom = makeStyles((theme) => ({
+	paper: {
+		padding: theme.spacing(8),
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	fab: {
+		width: 300,
+		outline: 'none !important',
+	},
+	btn: {
+		background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+		border: 0,
+		borderRadius: 3,
+		boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+		color: 'white',
+		height: 48,
+		padding: '0 30px',
+	},
+	input: {
+		width: 300,
+	},
+	mr: {
+		marginRight: theme.spacing(1),
+	},
+	ml: {
+		marginLeft: theme.spacing(1),
+	},
+	mt: {
+		marginTop: theme.spacing(1),
+	},
+	mb: {
+		marginBottom: theme.spacing(1),
 	},
 }));

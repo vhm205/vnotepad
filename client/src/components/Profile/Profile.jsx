@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Avatar from 'avataaars';
 import { useCookies } from 'react-cookie';
-
 import {
 	Paper,
 	Typography,
@@ -11,33 +10,71 @@ import {
 	CardContent,
 	Button,
 	TextField,
+	Snackbar,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 
-import { useStylesForProfile } from '../Styles';
-import { httpGetProfile } from '../Service/Service';
+import {
+	httpGetProfile,
+	httpUpdateProfile,
+	httpResetPassword,
+	httpRefreshToken,
+} from '../../service/Service';
+import { useStylesForProfile, useCustom } from '../../style/CommonStyles';
 
 const Profile = () => {
 	const classes = useStylesForProfile();
+	const custom = useCustom();
 	const [info, setInfo] = useState({});
+	const [notify, setNotify] = useState({ type: '', message: '' });
+	const [isUpdate, setIsUpdate] = useState(false);
 	const [cookies, setCookie] = useCookies();
 
-	const getProfile = useCallback(async () => {
-		const token = cookies.token;
-		if (!token) return;
-
-		try {
-			const response = await httpGetProfile(token);
-			setInfo(response.data.user);
-		} catch (error) {
-			console.error(error);
-		}
+	useEffect(() => {
+		(async () => {
+			if (cookies.token) {
+				try {
+					const response = await httpGetProfile(cookies.token);
+					setInfo(response.data.user);
+				} catch (error) {
+					console.error(error.response);
+					const response = await httpRefreshToken(cookies.refreshToken);
+					setCookie('token', response.data.token);
+				}
+			}
+		})();
 	}, [cookies.token]);
 
-	useEffect(() => {
-		getProfile();
-	}, []);
+	const updateProfile = async () => {
+		try {
+			const response = await httpUpdateProfile(cookies.token, {
+				username: info.username,
+			});
+			setNotify({ type: 'success', message: response.data.msg });
+		} catch (error) {
+			console.error(error, error.response);
+		} finally {
+			setIsUpdate(false);
+		}
+	};
 
-	return (
+	const resetPassword = async () => {
+		try {
+			const response = await httpResetPassword(cookies.token);
+			setNotify({ type: 'success', message: response.data.msg });
+		} catch (error) {
+			console.error(error, error.response);
+		}
+	};
+
+	const handleCloseNotify = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+		setNotify({ type: '', message: '' });
+	};
+
+	return Object.keys(info).length > 0 ? (
 		<Paper className={classes.root + ' d-flex'}>
 			<Typography variant="h5" component="h3" className="col-4">
 				<Card className={classes.card}>
@@ -74,51 +111,65 @@ const Profile = () => {
 						</CardContent>
 					</CardActionArea>
 					<CardActions className="text-center">
-						<Button size="large" color="secondary" className="btn-block">
-							Share
+						<Button
+							size="large"
+							color="secondary"
+							className="btn-block"
+							onClick={updateProfile}
+							disabled={!isUpdate}
+						>
+							Save your profile
 						</Button>
 					</CardActions>
 				</Card>
 			</Typography>
-			{Object.keys(info).length > 0 ? (
-				<Typography component="form" className="col-6">
-					<h3>Infomation</h3>
-					<TextField
-						className="mb-3"
-						name="name"
-						label="Name"
-						autoComplete="off"
-						defaultValue={info.username}
-						InputLabelProps={{ shrink: true }}
-						fullWidth
-					/>
-
-					<TextField
-						className="mb-3"
-						name="email"
-						label="Email"
-						autoComplete="off"
-						defaultValue={info.email}
-						InputLabelProps={{ shrink: true }}
-						fullWidth
-					/>
-					<TextField
-						type="password"
-						className="mb-3"
-						name="password"
-						label="Password"
-						autoComplete="off"
-						// defaultValue={info.password}
-						InputLabelProps={{ shrink: true }}
-						fullWidth
-					/>
-					<Button variant="contained" color="primary" className="float-right">
-						{' '}
-						Save your profile{' '}
-					</Button>
-				</Typography>
-			) : null}
+			<Typography component="form" className="col-6">
+				<h3>Infomation</h3>
+				<TextField
+					className="mb-3"
+					name="email"
+					label="Email"
+					autoComplete="off"
+					defaultValue={info.email}
+					InputLabelProps={{ shrink: true }}
+					fullWidth
+					disabled
+				/>
+				<TextField
+					className="mb-3"
+					name="name"
+					label="Name"
+					autoComplete="off"
+					defaultValue={info.username}
+					InputLabelProps={{ shrink: true }}
+					onChange={(e) => {
+						setInfo((value) => ({ ...value, username: e.target.value }));
+						if (!isUpdate) setIsUpdate(true);
+					}}
+					fullWidth
+				/>
+				<Button
+					variant="contained"
+					className={`${custom.btn} float-left`}
+					onClick={resetPassword}
+				>
+					Reset Password
+				</Button>
+			</Typography>
+			<Snackbar
+				open={notify.message ? true : false}
+				autoHideDuration={3000}
+				onClose={handleCloseNotify}
+			>
+				{notify.type === 'error' ? (
+					<Alert severity="error">{notify.message}</Alert>
+				) : (
+					<Alert severity="success">{notify.message}</Alert>
+				)}
+			</Snackbar>
 		</Paper>
+	) : (
+		<div>Nothing...</div>
 	);
 };
 

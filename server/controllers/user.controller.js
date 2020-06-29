@@ -1,5 +1,7 @@
 const UserModel = require('../models/User.model');
 const bcrypt = require('bcryptjs');
+const { sendMail } = require('../config/mailConfig');
+const { URL } = require('../config/app');
 
 const profile = (req, res) => {
 	res.status(200).json({ user: res.locals.body.user });
@@ -76,6 +78,36 @@ const refreshToken = async (req, res) => {
 	}
 };
 
+const updateProfile = async (req, res) => {
+	try {
+		const {
+			user: { _id },
+			username,
+		} = res.locals.body;
+		await UserModel.updateProfile(_id, { username });
+
+		return res.status(200).json({ msg: 'Update profile successfully' });
+	} catch (error) {
+		return res.status(400).json(error);
+	}
+};
+
+const resetPassword = async (req, res) => {
+	try {
+		const { user } = res.locals.body;
+		const token = await user.generateToken();
+		const linkReset = `${URL}/reset-password?token=${token}`;
+		const result = sendMail(user.email, 'Reset your password', linkReset);
+		console.log(result);
+
+		return res
+			.status(200)
+			.json({ msg: 'An email has been sent! Please check your gmail' });
+	} catch (error) {
+		return res.status(400).json(error);
+	}
+};
+
 module.exports = {
 	profile,
 	register,
@@ -83,4 +115,6 @@ module.exports = {
 	logout,
 	logoutAll,
 	refreshToken,
+	updateProfile,
+	resetPassword,
 };

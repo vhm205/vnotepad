@@ -13,10 +13,10 @@ import {
 import { LockOutlined } from '@material-ui/icons';
 import { Alert } from '@material-ui/lab';
 
-import { Copyright, useStylesForSignUp } from '../Styles';
-import { api } from '../Service/Service';
 import { NavLink, useHistory } from 'react-router-dom';
-import registerValid from '../Validation/RegisterValid';
+import { Copyright, useStylesForSignUp } from '../../style/CommonStyles';
+import { api } from '../../service/Service';
+import registerValid from '../../validation/RegisterValid';
 
 const Register = () => {
 	const classes = useStylesForSignUp();

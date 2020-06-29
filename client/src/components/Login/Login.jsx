@@ -16,12 +16,12 @@ import {
 } from '@material-ui/core';
 import { LockOutlined } from '@material-ui/icons';
 import { Alert } from '@material-ui/lab';
-import { NavLink, useHistory } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
-import { Copyright, useStylesForSignUp } from '../Styles';
-import { api } from '../Service/Service';
-import loginValid from '../Validation/LoginValid';
+import { Copyright, useStylesForSignUp } from '../../style/CommonStyles';
+import { api } from '../../service/Service';
+import loginValid from '../../validation/LoginValid';
 
 const Login = () => {
 	const classes = useStylesForSignUp();
@@ -29,8 +29,7 @@ const Login = () => {
 	const [password, setPass] = useState('');
 	const [remember, setRemember] = useState(false);
 	const [error, setError] = useState('');
-	const [cookies, setCookie] = useCookies();
-	const history = useHistory();
+	const [, setCookie] = useCookies();
 
 	useEffect(() => {
 		const rememberMe = JSON.parse(window.localStorage.getItem('remember'));
@@ -46,8 +45,6 @@ const Login = () => {
 			const valid = await loginValid.validateAsync({ email, password });
 			const response = await api.post('/login', valid);
 			const { msg, token, refreshToken } = response.data;
-			setCookie('token', token);
-			setCookie('refresh-token', refreshToken);
 
 			if (remember) {
 				window.localStorage.setItem(
@@ -67,9 +64,9 @@ const Login = () => {
 				backdrop: 'rgba(85,85,85, .4)',
 				timerProgressBar: true,
 			}).then(() => {
-				history.push('/profile');
+				setCookie('token', token);
+				setCookie('refreshToken', refreshToken);
 			});
-			setError('');
 		} catch (error) {
 			console.error(error);
 			if (error.response) {

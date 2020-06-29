@@ -72,6 +72,9 @@ userSchema.statics = {
 	checkTokenExists(token) {
 		return this.findOne({ 'tokens.token': token });
 	},
+	updateProfile(id, data) {
+		return this.updateOne({ _id: id }, { $set: data });
+	},
 };
 
 module.exports = mongoose.model('User', userSchema);
