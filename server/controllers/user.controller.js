@@ -53,7 +53,7 @@ const logout = async (req, res) => {
 
 const logoutAll = async (req, res) => {
 	try {
-		const { user } = res.locals.body;
+		let user = res.locals.body.user;
 		user = await UserModel.findUserById(user._id);
 		user.tokens = [];
 		await user.save();
@@ -92,13 +92,24 @@ const updateProfile = async (req, res) => {
 	}
 };
 
+const updatePassword = async (req, res) => {
+	try {
+		const { _id } = res.locals.body.user;
+		const password = res.locals.password;
+		const passwordHashed = bcrypt.hashSync(password, bcrypt.genSaltSync(12));
+		await UserModel.updatePassword(_id, passwordHashed);
+		return res.status(200).json({ msg: 'Update password successfully' });
+	} catch (error) {
+		return res.status(400).json(error);
+	}
+};
+
 const resetPassword = async (req, res) => {
 	try {
 		const { user } = res.locals.body;
 		const token = await user.generateToken();
 		const linkReset = `${URL}/reset-password?token=${token}`;
-		const result = sendMail(user.email, 'Reset your password', linkReset);
-		console.log(result);
+		sendMail(user.email, 'Reset your password', linkReset);
 
 		return res
 			.status(200)
@@ -116,5 +127,6 @@ module.exports = {
 	logoutAll,
 	refreshToken,
 	updateProfile,
+	updatePassword,
 	resetPassword,
 };

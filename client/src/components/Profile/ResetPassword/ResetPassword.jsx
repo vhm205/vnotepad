@@ -1,21 +1,56 @@
 import React, { useState } from 'react';
 import { Paper, TextField, Typography, Fab } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { Restore } from '@material-ui/icons';
+import { useHistory } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 import { useCustom } from '../../../style/CommonStyles';
-import { httpUpdatePassword } from '../../../service/Service';
+import { httpUpdatePassword, httpLogoutAll } from '../../../service/Service';
+import resetPassValid from '../../../validation/ResetPassValid';
+import Swal from 'sweetalert2';
 
 const ResetPassword = ({ ...rest }) => {
 	const custom = useCustom();
+	const history = useHistory();
 	const [password, setPassword] = useState('');
 	const [repass, setRepass] = useState('');
+	const [error, setError] = useState('');
+	const [cookies, , removeCookie] = useCookies();
 
 	const onResetPassword = async () => {
+		const token = rest.location.search.split('=')[1];
+		if (!token) history.push('/login');
+
 		try {
-			const token = rest.location.search.split('=')[1];
-			const response = await httpUpdatePassword(token, { password, repass });
-			console.log(response);
+			const valid = await resetPassValid.validateAsync({ password, repass });
+			const response = await httpUpdatePassword(token, valid);
+			Swal.fire({
+				icon: 'success',
+				title: response.data.msg,
+				text: 'You need login again!!',
+				showConfirmButton: false,
+				allowOutsideClick: false,
+				backdrop: 'rgba(85,85,85, .4)',
+				timerProgressBar: true,
+				timer: 3000,
+			}).then(() => {
+				httpLogoutAll(cookies.token)
+					.then(() => {
+						removeCookie('token');
+						removeCookie('refreshToken');
+					})
+					.catch((err) => console.error(err));
+			});
 		} catch (error) {
-			console.error(error, error.response);
+			if (error.response) {
+				setError(error.response.data.msg);
+			}
+
+			if (error.message === '"repass" must be [ref:password]') {
+				setError('Password is not matched');
+			} else {
+				setError(error.message);
+			}
 		}
 	};
 
@@ -39,12 +74,13 @@ const ResetPassword = ({ ...rest }) => {
 			<Fab
 				variant="extended"
 				color="primary"
-				className={`${custom.mt} ${custom.fab}`}
+				className={`${custom.mt} ${custom.mb} ${custom.fab}`}
 				onClick={onResetPassword}
 			>
 				<Restore className={custom.mr} />
 				Reset Password
 			</Fab>
+			{error && <Alert severity="error">{error}</Alert>}
 		</Paper>
 	);
 };

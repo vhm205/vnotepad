@@ -1,6 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch } from 'react-router-dom';
-import { Login, Register, NavBar, Profile, ResetPassword } from './components';
+import {
+	Login,
+	Register,
+	NavBar,
+	Profile,
+	ResetPassword,
+	Notes,
+} from './components';
 import { PrivateRouter, PublicRouter } from './router';
 import Container from '@material-ui/core/Container';
 
@@ -14,6 +21,7 @@ const App = () => {
 					<PublicRouter path="/register" component={Register} />
 					<PrivateRouter path="/profile" component={Profile} />
 					<PrivateRouter path="/reset-password" component={ResetPassword} />
+					<PrivateRouter path="/notes" component={Notes} />
 				</Switch>
 			</Router>
 		</Container>

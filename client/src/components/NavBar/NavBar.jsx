@@ -21,9 +21,9 @@ const NavBar = () => {
 	return (
 		<div>
 			<nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-				<a className="navbar-brand" href="/">
+				<NavLink to="/" className="navbar-brand">
 					Home
-				</a>
+				</NavLink>
 				<button
 					className="navbar-toggler"
 					type="button"
@@ -52,6 +52,11 @@ const NavBar = () => {
 							</Fragment>
 						) : (
 							<Fragment>
+								<li className="nav-item">
+									<NavLink to="/notes" className="nav-link">
+										Notes
+									</NavLink>
+								</li>
 								<li className="nav-item">
 									<NavLink to="/profile" className="nav-link">
 										Profile

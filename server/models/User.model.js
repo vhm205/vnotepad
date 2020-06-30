@@ -37,10 +37,9 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', async function (next) {
 	if (this.isModified('password')) {
-		const salt = await bcrypt.genSalt(8);
+		const salt = await bcrypt.genSalt(12);
 		this.password = await bcrypt.hash(this.password, salt);
 	}
-
 	next();
 });
 
@@ -53,7 +52,7 @@ userSchema.methods = {
 	},
 	async generateToken() {
 		const token = await jwt.sign({ _id: this._id }, process.env.JWT_KEY, {
-			expiresIn: '5m',
+			expiresIn: '1h',
 		});
 		return token;
 	},
@@ -74,6 +73,9 @@ userSchema.statics = {
 	},
 	updateProfile(id, data) {
 		return this.updateOne({ _id: id }, { $set: data });
+	},
+	updatePassword(id, password) {
+		return this.updateOne({ _id: id }, { $set: { password } });
 	},
 };
 

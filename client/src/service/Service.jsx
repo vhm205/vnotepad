@@ -11,7 +11,9 @@ export const httpGetProfile = (token) => {
 	return api
 		.get('/profile', { headers: { Authorization: `Bearer ${token}` } })
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
 
 export const httpUpdateProfile = (token, data) => {
@@ -20,7 +22,9 @@ export const httpUpdateProfile = (token, data) => {
 			headers: { Authorization: `Bearer ${token}` },
 		})
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
 
 export const httpResetPassword = (token, data) => {
@@ -29,7 +33,9 @@ export const httpResetPassword = (token, data) => {
 			headers: { Authorization: `Bearer ${token}` },
 		})
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
 
 export const httpUpdatePassword = (token, data) => {
@@ -38,26 +44,34 @@ export const httpUpdatePassword = (token, data) => {
 			headers: { Authorization: `Bearer ${token}` },
 		})
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
 
 export const httpRefreshToken = (token) => {
 	return api
 		.get('/refresh-token', { headers: { Authorization: `Bearer ${token}` } })
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
 
 export const httpLogout = (token) => {
 	return api
 		.post('/logout', {}, { headers: { Authorization: `Bearer ${token}` } })
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
 
 export const httpLogoutAll = (token) => {
 	return api
 		.post('/logoutAll', {}, { headers: { Authorization: `Bearer ${token}` } })
 		.then((response) => response)
-		.catch((err) => err);
+		.catch((err) => {
+			throw new Error(err.response.data.msg);
+		});
 };
