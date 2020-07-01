@@ -94,10 +94,9 @@ const updateProfile = async (req, res) => {
 
 const updatePassword = async (req, res) => {
 	try {
-		const { _id } = res.locals.body.user;
-		const password = res.locals.password;
-		const passwordHashed = bcrypt.hashSync(password, bcrypt.genSaltSync(12));
-		await UserModel.updatePassword(_id, passwordHashed);
+		const user = res.locals.body.user;
+		user.password = res.locals.password;
+		await user.save();
 		return res.status(200).json({ msg: 'Update password successfully' });
 	} catch (error) {
 		return res.status(400).json(error);

@@ -7,6 +7,7 @@ import {
 	Profile,
 	ResetPassword,
 	Notes,
+	NoteDetail,
 } from './components';
 import { PrivateRouter, PublicRouter } from './router';
 import Container from '@material-ui/core/Container';
@@ -22,6 +23,7 @@ const App = () => {
 					<PrivateRouter path="/profile" component={Profile} />
 					<PrivateRouter path="/reset-password" component={ResetPassword} />
 					<PrivateRouter path="/notes" component={Notes} />
+					<PrivateRouter path="/create/note" component={NoteDetail} />
 				</Switch>
 			</Router>
 		</Container>

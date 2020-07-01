@@ -175,7 +175,9 @@ const Profile = () => {
 				autoHideDuration={3000}
 				onClose={handleCloseNotify}
 			>
-				<Alert severity={notify.type && 'info'}>{notify.message}</Alert>
+				<Alert severity={notify.type ? notify.type : 'info'}>
+					{notify.message}
+				</Alert>
 			</Snackbar>
 		</>
 	);

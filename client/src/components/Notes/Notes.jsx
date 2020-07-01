@@ -2,20 +2,19 @@ import React, { useState } from 'react';
 import { Paper, Grid } from '@material-ui/core';
 import { Add, Favorite, Delete } from '@material-ui/icons';
 import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@material-ui/lab';
+import { useHistory } from 'react-router-dom';
 import { useCustom } from '../../style/CommonStyles';
-import { useNotesStyles } from '../../style/NoteStyles';
+import { useNotesStyles } from '../../style';
 import Note from './Note/Note';
 
 const Notes = () => {
 	const styles = useNotesStyles();
 	const custom = useCustom();
+	const history = useHistory();
 	const [open, setOpen] = useState(false);
 	const [action, setAction] = useState('');
 
-	const onAdd = () => {
-		console.log('Add note');
-		setAction('add');
-	};
+	const onAdd = () => history.push('/create/note');
 	const onDelete = () => setAction('delete');
 	const onFavorite = () => setAction('favorite');
 

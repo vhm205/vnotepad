@@ -74,9 +74,6 @@ userSchema.statics = {
 	updateProfile(id, data) {
 		return this.updateOne({ _id: id }, { $set: data });
 	},
-	updatePassword(id, password) {
-		return this.updateOne({ _id: id }, { $set: { password } });
-	},
 };
 
 module.exports = mongoose.model('User', userSchema);
