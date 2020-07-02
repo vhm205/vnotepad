@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import shortId from 'shortid';
 import { Editor } from '@tinymce/tinymce-react';
 import {
 	Paper,
@@ -6,26 +7,43 @@ import {
 	Breadcrumbs,
 	Typography,
 	CircularProgress,
+	TextareaAutosize,
 	Fab,
 	Grid,
 } from '@material-ui/core';
 import { Save as SaveIcon, Lock as LockIcon } from '@material-ui/icons';
 import { NavLink } from 'react-router-dom';
 import { useNotesStyles, useCustom } from '../../../style';
+import { useCookies } from 'react-cookie';
+import { UserContext } from '../../../context/UserContext';
 import ModalProtected from './ModalProtected';
 
 const NoteDetail = () => {
 	const styles = useNotesStyles();
 	const custom = useCustom();
+	const [user] = useContext(UserContext);
+	const [cookies] = useCookies();
 	const [useRichTextBox, setUseRichTextBox] = useState(true);
-	const [loading, setLoading] = useState(false);
 	const [openModalProtect, setOpenModalProtect] = useState(false);
-
-	const onEditorChange = (content, editor) => {
-		// console.log(editor, content);
-	};
+	const [loading, setLoading] = useState(false);
+	const [title, setTitle] = useState('');
+	const [content, setContent] = useState('');
+	const [permission, setPermission] = useState({
+		access: 'public',
+		protected: '',
+	});
 
 	const onSave = () => {
+		const newNote = {
+			url_id: shortId.generate(),
+			title: title,
+			content: content,
+			access: permission.access,
+			owner: user.email,
+			protected: permission.access === 'password' ? permission.protected : null,
+		};
+		console.log(newNote);
+
 		setLoading(true);
 		setTimeout(() => {
 			setLoading(false);
@@ -33,10 +51,6 @@ const NoteDetail = () => {
 	};
 
 	const handleCloseModalProtect = () => setOpenModalProtect(false);
-
-	const handlePermission = (permission, password = '') => {
-		console.log(permission, password);
-	};
 
 	return (
 		<Paper className={styles.paper}>
@@ -50,15 +64,21 @@ const NoteDetail = () => {
 				variant="filled"
 				fullWidth
 				className={custom.mb}
+				value={title}
+				onChange={(e) => setTitle(e.target.value)}
 			/>
 			{useRichTextBox ? (
-				<textarea style={{ width: '100%', height: 500 }}></textarea>
+				<TextareaAutosize
+					style={{ width: '100%', height: 500 }}
+					rows={1000}
+					onChange={(e) => setContent(e.target.value)}
+				/>
 			) : (
 				<Editor
 					apiKey="mnhe8mkhfadk24d7pbtvd880370fc3jyxr34fxx0csiks0gt"
 					init={initEditor}
 					className={custom.mb}
-					onEditorChange={onEditorChange}
+					onEditorChange={(content, editor) => setContent(content)}
 				/>
 			)}
 			<Grid container direction="row" className={custom.mt}>
@@ -96,8 +116,9 @@ const NoteDetail = () => {
 			</Grid>
 			<ModalProtected
 				open={openModalProtect}
+				permission={permission}
+				setPermission={setPermission}
 				handleClose={handleCloseModalProtect}
-				handlePermission={handlePermission}
 			/>
 		</Paper>
 	);
@@ -111,10 +132,9 @@ const initEditor = {
 		'searchreplace visualblocks code fullscreen',
 		'insertdatetime media table paste code help wordcount',
 	],
-	toolbar:
-		'undo redo | formatselect | bold italic backcolor | \
+	toolbar: `undo redo | formatselect | bold italic backcolor | \
              alignleft aligncenter alignright alignjustify | \
-             bullist numlist outdent indent | removeformat | help',
+             bullist numlist outdent indent | removeformat | help`,
 };
 
 export default NoteDetail;
