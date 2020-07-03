@@ -22,7 +22,7 @@ router.post(
 	userValid.validateUpdateProfile,
 	userController.updateProfile
 );
-router.post('/logout', userAuth.authUser, userController.logout);
-router.post('/logoutAll', userAuth.authUser, userController.logoutAll);
+router.get('/logout', userAuth.authUser, userController.logout);
+router.get('/logoutAll', userAuth.authUser, userController.logoutAll);
 
 module.exports = router;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-
 import {
 	Avatar,
 	Button,
@@ -20,7 +19,7 @@ import { NavLink } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
 import { Copyright, useStylesForSignUp } from '../../style/CommonStyles';
-import { api } from '../../service/Service';
+import UserAPI from '../../service/userApi';
 import loginValid from '../../validation/LoginValid';
 
 const Login = () => {
@@ -43,8 +42,9 @@ const Login = () => {
 	const onSignIn = async () => {
 		try {
 			const valid = await loginValid.validateAsync({ email, password });
-			const response = await api.post('/login', valid);
-			const { msg, token, refreshToken } = response.data;
+
+			const response = await UserAPI.login(valid);
+			const { msg, token, refreshToken } = response;
 
 			if (remember) {
 				window.localStorage.setItem(
@@ -68,7 +68,6 @@ const Login = () => {
 				setCookie('refreshToken', refreshToken);
 			});
 		} catch (error) {
-			console.error(error);
 			if (error.response) {
 				setError(error.response.data.msg);
 			} else {

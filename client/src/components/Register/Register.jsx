@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import {
 	Avatar,
 	Button,
@@ -12,10 +13,9 @@ import {
 } from '@material-ui/core';
 import { LockOutlined } from '@material-ui/icons';
 import { Alert } from '@material-ui/lab';
-
 import { NavLink, useHistory } from 'react-router-dom';
 import { Copyright, useStylesForSignUp } from '../../style/CommonStyles';
-import { api } from '../../service/Service';
+import UserAPI from '../../service/userApi';
 import registerValid from '../../validation/RegisterValid';
 
 const Register = () => {
@@ -25,7 +25,6 @@ const Register = () => {
 	const [password, setPass] = useState('');
 	const [repass, setRepass] = useState('');
 	const [error, setError] = useState('');
-	const [success, setSuccess] = useState('');
 	const history = useHistory();
 
 	const onSignUp = async (e) => {
@@ -38,13 +37,19 @@ const Register = () => {
 				password,
 				repass,
 			});
-			await api.post('/register', valid);
+			await UserAPI.register(valid);
 
-			setSuccess('Sign up successfully');
-			setError('');
-			setTimeout(() => {
+			Swal.fire({
+				icon: 'success',
+				title: 'Sign up successfully',
+				showConfirmButton: false,
+				timer: 2000,
+				allowOutsideClick: false,
+				backdrop: 'rgba(85,85,85, .4)',
+				timerProgressBar: true,
+			}).then(() => {
 				history.push('/login');
-			}, 2000);
+			});
 		} catch (error) {
 			if (error.response) {
 				setError(error.response.data.msg);
@@ -55,7 +60,6 @@ const Register = () => {
 						: error.message
 				);
 			}
-			setSuccess('');
 		}
 	};
 
@@ -110,7 +114,6 @@ const Register = () => {
 						onChange={(e) => setRepass(e.target.value)}
 					/>
 					{error && <Alert severity="error">{error}</Alert>}
-					{success && <Alert severity="success">{success}</Alert>}
 					<Button
 						type="button"
 						fullWidth

@@ -53,9 +53,9 @@ const logout = async (req, res) => {
 
 const logoutAll = async (req, res) => {
 	try {
-		let user = res.locals.body.user;
+		let { user, token: refreshToken } = res.locals.body;
 		user = await UserModel.findUserById(user._id);
-		user.tokens = [];
+		user.tokens = user.tokens.filter((t) => t.token === refreshToken);
 		await user.save();
 
 		return res.sendStatus(204);

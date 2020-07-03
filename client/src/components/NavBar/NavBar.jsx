@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
 import { useCookies } from 'react-cookie';
 import { NavLink } from 'react-router-dom';
-import { httpLogout } from '../../service/Service';
 import { isAuthenticate } from '../../authenticate/authUser';
+import UserAPI from '../../service/userApi';
 
 const NavBar = () => {
 	const [cookies, , removeCookie] = useCookies();
@@ -12,7 +12,7 @@ const NavBar = () => {
 
 		const refreshToken = cookies.refreshToken;
 		if (refreshToken) {
-			await httpLogout(refreshToken);
+			await UserAPI.logout(refreshToken);
 			removeCookie('token');
 			removeCookie('refreshToken');
 		}

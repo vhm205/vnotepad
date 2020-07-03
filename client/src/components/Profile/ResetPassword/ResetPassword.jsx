@@ -5,7 +5,7 @@ import { Restore } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import { useCustom } from '../../../style/CommonStyles';
-import { httpUpdatePassword, httpLogoutAll } from '../../../service/Service';
+import UserAPI from '../../../service/userApi';
 import resetPassValid from '../../../validation/ResetPassValid';
 import Swal from 'sweetalert2';
 
@@ -21,12 +21,13 @@ const ResetPassword = ({ ...rest }) => {
 		const token = rest.location.search.split('=')[1];
 		if (!token) history.push('/login');
 
+		const userApi = new UserAPI(token);
 		try {
 			const valid = await resetPassValid.validateAsync({ password, repass });
-			const response = await httpUpdatePassword(token, valid);
+			const response = await userApi.updatePassword(valid);
 			Swal.fire({
 				icon: 'success',
-				title: response.data.msg,
+				title: response.msg,
 				text: 'You need login again!!',
 				showConfirmButton: false,
 				allowOutsideClick: false,
@@ -34,7 +35,7 @@ const ResetPassword = ({ ...rest }) => {
 				timerProgressBar: true,
 				timer: 3000,
 			}).then(() => {
-				httpLogoutAll(cookies.token)
+				UserAPI.logoutAll(cookies.refreshToken)
 					.then(() => {
 						removeCookie('token');
 						removeCookie('refreshToken');
@@ -44,6 +45,7 @@ const ResetPassword = ({ ...rest }) => {
 		} catch (error) {
 			if (error.response) {
 				setError(error.response.data.msg);
+				return;
 			}
 
 			if (error.message === '"repass" must be [ref:password]') {

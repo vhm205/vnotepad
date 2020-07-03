@@ -42,7 +42,7 @@ const NoteDetail = () => {
 			owner: user.email,
 			protected: permission.access === 'password' ? permission.protected : null,
 		};
-		console.log(newNote);
+		console.log(newNote, cookies);
 
 		setLoading(true);
 		setTimeout(() => {

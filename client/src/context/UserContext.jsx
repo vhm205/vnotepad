@@ -1,5 +1,5 @@
 import React from 'react';
-import { httpGetProfile, httpRefreshToken } from '../service/Service';
+import UserAPI from '../service/userApi';
 import { useCookies } from 'react-cookie';
 
 export const UserContext = React.createContext();
@@ -11,13 +11,14 @@ export const UserProvider = ({ children }) => {
 	React.useEffect(() => {
 		(async () => {
 			if (cookies.token) {
+				const userApi = new UserAPI(cookies.token);
 				try {
-					const response = await httpGetProfile(cookies.token);
-					setUser(response.data.user);
+					const response = await userApi.getProfile();
+					setUser(response.user);
 				} catch (error) {
-					httpRefreshToken(cookies.refreshToken)
+					UserAPI.refreshToken(cookies.refreshToken)
 						.then((response) => {
-							setCookie('token', response.data.token);
+							setCookie('token', response.token);
 						})
 						.catch(() => {
 							removeCookie('token');

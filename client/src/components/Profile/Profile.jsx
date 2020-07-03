@@ -11,7 +11,7 @@ import {
 	TextField,
 	Snackbar,
 } from '@material-ui/core';
-import { httpUpdateProfile, httpResetPassword } from '../../service/Service';
+import UserAPI from '../../service/userApi';
 import Avatar from 'avataaars';
 import { useCookies } from 'react-cookie';
 import { useStylesForProfile, useCustom } from '../../style/CommonStyles';
@@ -20,21 +20,26 @@ import { UserContext } from '../../context/UserContext';
 const Profile = () => {
 	const classes = useStylesForProfile();
 	const custom = useCustom();
-	const [user, setUser] = useContext(UserContext);
 	const [cookies] = useCookies();
-	const [isUpdate, setIsUpdate] = useState(false);
+	const [user, setUser] = useContext(UserContext);
 	const [info, setInfo] = useState({});
+	const [isUpdate, setIsUpdate] = useState(false);
+	const [isLogoutAll, setIsLogoutAll] = useState(false);
 	const [notify, setNotify] = useState({ type: '', message: '' });
+	const userApi = new UserAPI(cookies.token);
 
 	const updateProfile = async () => {
 		try {
-			const response = await httpUpdateProfile(cookies.token, {
+			const response = await userApi.updateProfile({
 				username: info.username,
 			});
 			setUser((value) => ({ ...value, username: info.username }));
-			setNotify({ type: 'success', message: response.data.msg });
+			setNotify({ type: 'success', message: response.msg });
 		} catch (error) {
-			setNotify({ type: 'error', message: error.message });
+			setNotify({
+				type: 'error',
+				message: error.response ? error.response.data.msg : error.message,
+			});
 		} finally {
 			setIsUpdate(false);
 		}
@@ -42,10 +47,19 @@ const Profile = () => {
 
 	const resetPassword = async () => {
 		try {
-			const response = await httpResetPassword(cookies.token);
-			setNotify({ type: 'success', message: response.data.msg });
+			const response = await userApi.resetPassword();
+			setNotify({ type: 'success', message: response.msg });
 		} catch (error) {
-			console.error(error, error.response);
+			console.error(error, error.response, error.message);
+		}
+	};
+
+	const logoutAll = async () => {
+		try {
+			await UserAPI.logoutAll(cookies.refreshToken);
+			setIsLogoutAll(true);
+		} catch (error) {
+			console.error(error, error.response, error.message);
 		}
 	};
 
@@ -141,6 +155,14 @@ const Profile = () => {
 							onClick={resetPassword}
 						>
 							Reset Password
+						</Button>
+						<Button
+							variant="contained"
+							className={`${custom.btn} float-right`}
+							disabled={isLogoutAll}
+							onClick={logoutAll}
+						>
+							Logout All Device
 						</Button>
 					</Typography>
 				</Paper>
