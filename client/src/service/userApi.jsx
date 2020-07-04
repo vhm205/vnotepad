@@ -3,6 +3,7 @@ import api from './api';
 class UserAPI {
 	constructor(token) {
 		api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+		api.defaults.baseURL = 'http://localhost:1002/users';
 	}
 	getProfile() {
 		return api.get('/profile');

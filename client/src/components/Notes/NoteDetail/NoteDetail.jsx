@@ -1,26 +1,32 @@
 import React, { useState, useContext } from 'react';
 import shortId from 'shortid';
 import { Editor } from '@tinymce/tinymce-react';
+import { config } from '../../../config';
 import {
 	Paper,
+	Fab,
+	Grid,
 	TextField,
 	Breadcrumbs,
 	Typography,
+	Popover,
 	CircularProgress,
 	TextareaAutosize,
-	Fab,
-	Grid,
 } from '@material-ui/core';
 import { Save as SaveIcon, Lock as LockIcon } from '@material-ui/icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams, useHistory } from 'react-router-dom';
 import { useNotesStyles, useCustom } from '../../../style';
 import { useCookies } from 'react-cookie';
 import { UserContext } from '../../../context/UserContext';
-import ModalProtected from './ModalProtected';
+import NoteAPI from '../../../service/noteApi';
+import ModalProtected from './Modal/ModalProtected';
+import Notify from './Notify/Notify';
 
 const NoteDetail = () => {
 	const styles = useNotesStyles();
 	const custom = useCustom();
+	const history = useHistory();
+	const { url_id } = useParams();
 	const [user] = useContext(UserContext);
 	const [cookies] = useCookies();
 	const [useRichTextBox, setUseRichTextBox] = useState(true);
@@ -28,29 +34,53 @@ const NoteDetail = () => {
 	const [loading, setLoading] = useState(false);
 	const [title, setTitle] = useState('');
 	const [content, setContent] = useState('');
+	const [link, setLink] = useState('');
+	const [anchorEl, setAnchorEl] = useState(null);
+	const [notify, setNotify] = useState({ type: '', message: '' });
 	const [permission, setPermission] = useState({
 		access: 'public',
 		protected: '',
 	});
+	const noteApi = new NoteAPI(cookies.token);
 
-	const onSave = () => {
-		const newNote = {
-			url_id: shortId.generate(),
-			title: title,
-			content: content,
-			access: permission.access,
-			owner: user.email,
-			protected: permission.access === 'password' ? permission.protected : null,
-		};
-		console.log(newNote, cookies);
+	React.useEffect(() => {
+		if (url_id) {
+			(async () => {
+				const response = await NoteAPI.getNoteById(url_id);
+				setTitle(response.title);
+				setContent(response.content);
+				setLink(`${config.BASE_URL}/note/${response.url_id}`);
+				setPermission({
+					access: response.access,
+					protected: response.protected,
+				});
+			})();
+		}
+	}, [url_id]);
 
-		setLoading(true);
-		setTimeout(() => {
+	const onSave = async () => {
+		try {
+			setLoading(true);
+			const newNote = {
+				url_id: shortId.generate(),
+				title: title,
+				content: content,
+				access: permission.access,
+				owner: user.email,
+				protected: permission.access === 'password' ? permission.protected : '',
+			};
+			const response = await noteApi.createNote(newNote);
+			history.push(`/note/${response.url_id}`);
+		} catch (error) {
+			if (error.response) {
+				setNotify({ type: 'error', message: error.response.data.msg });
+			} else {
+				setNotify({ type: 'error', message: error.message });
+			}
+		} finally {
 			setLoading(false);
-		}, 2000);
+		}
 	};
-
-	const handleCloseModalProtect = () => setOpenModalProtect(false);
 
 	return (
 		<Paper className={styles.paper}>
@@ -71,6 +101,7 @@ const NoteDetail = () => {
 				<TextareaAutosize
 					style={{ width: '100%', height: 500 }}
 					rows={1000}
+					defaultValue={content}
 					onChange={(e) => setContent(e.target.value)}
 				/>
 			) : (
@@ -78,6 +109,7 @@ const NoteDetail = () => {
 					apiKey="mnhe8mkhfadk24d7pbtvd880370fc3jyxr34fxx0csiks0gt"
 					init={initEditor}
 					className={custom.mb}
+					defaultValue={content}
 					onEditorChange={(content, editor) => setContent(content)}
 				/>
 			)}
@@ -108,17 +140,48 @@ const NoteDetail = () => {
 				<Fab
 					variant="extended"
 					color="primary"
-					className={`${styles.btnWidth}`}
+					className={`${styles.btnWidth} ${custom.mr}`}
 					onClick={() => setUseRichTextBox((value) => !value)}
 				>
 					{useRichTextBox ? 'Disable Rich Text Box' : 'Enable Rich Text Box'}
 				</Fab>
+				<Fab
+					variant="extended"
+					color="primary"
+					className={`${styles.btnWidth}`}
+					onClick={(e) => setAnchorEl(e.currentTarget)}
+				>
+					Share Link
+				</Fab>
 			</Grid>
+			<Popover
+				open={!!anchorEl}
+				anchorEl={anchorEl}
+				anchorOrigin={{
+					vertical: 'top',
+					horizontal: 'center',
+				}}
+				transformOrigin={{
+					vertical: 'center',
+					horizontal: 'center',
+				}}
+				onClose={() => setAnchorEl(null)}
+			>
+				<Typography style={{ padding: 15 }}>
+					<a href={link} target="_blank" rel="noopener noreferrer">
+						{link}
+					</a>
+				</Typography>
+			</Popover>
 			<ModalProtected
 				open={openModalProtect}
 				permission={permission}
 				setPermission={setPermission}
-				handleClose={handleCloseModalProtect}
+				handleClose={() => setOpenModalProtect(false)}
+			/>
+			<Notify
+				notify={notify}
+				handleClose={() => setNotify({ type: '', message: '' })}
 			/>
 		</Paper>
 	);

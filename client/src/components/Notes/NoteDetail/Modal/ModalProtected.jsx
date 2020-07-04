@@ -56,8 +56,8 @@ const ModalProtected = React.memo(
 						variant="standard"
 						error={!!error}
 						helperText={error}
-						value={password}
-						disabled={!isPassword}
+						disabled={!isPassword && !permission.protected}
+						value={permission.protected}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
 				</DialogContent>

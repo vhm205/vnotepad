@@ -1,7 +1,7 @@
 const Joi = require('@hapi/joi');
 
 const schema = Joi.object({
-	title: Joi.string().alphanum().max(100).required(),
+	title: Joi.string().min(3).max(100).required(),
 	content: Joi.string().required(),
 	access: Joi.string().allow('public', 'private', 'password'),
 	owner: Joi.string()
@@ -10,15 +10,13 @@ const schema = Joi.object({
 			tlds: { allow: ['com', 'net'] },
 		})
 		.default(null),
-	protected: Joi.string().default(null),
+	protected: Joi.string().allow(''),
 	url_id: Joi.string().required(),
 });
 
 module.exports.validateCreateNote = async (req, res, next) => {
 	try {
-		const valid = await schema.validateAsync(req.body);
-		console.log(valid);
-
+		await schema.validateAsync(req.body);
 		next();
 	} catch (error) {
 		return res.status(400).json({ msg: error.message });

@@ -5,6 +5,7 @@ const NoteSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 		trim: true,
+		min: 3,
 		max: 100,
 	},
 	content: {
@@ -27,13 +28,19 @@ const NoteSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	created: { type: Date, default: Date.now },
-	updated: { type: Date, default: null },
+	created: { type: Number, default: Date.now },
+	updated: { type: Number, default: null },
 });
 
 NoteSchema.statics = {
-	createNew(item) {
-		return this.create(item);
+	createNew(items) {
+		return this.create(items);
+	},
+	getNoteById(url_id) {
+		return this.findOne({ url_id: url_id });
+	},
+	getAll() {
+		return this.find({});
 	},
 };
 

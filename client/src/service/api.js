@@ -2,7 +2,7 @@ import axios from 'axios';
 import queryString from 'query-string';
 
 const apiClient = axios.create({
-	baseURL: 'http://localhost:1002/users',
+	baseURL: 'http://localhost:1002',
 	headers: { 'Content-Type': 'application/json' },
 	responseType: 'json',
 	timeout: 5000,

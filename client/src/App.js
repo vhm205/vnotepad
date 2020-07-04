@@ -25,6 +25,7 @@ const App = () => {
 						<PrivateRouter path="/profile" component={Profile} />
 						<PrivateRouter path="/reset-password" component={ResetPassword} />
 						<PrivateRouter path="/notes" component={Notes} />
+						<PrivateRouter path="/note/:url_id" component={NoteDetail} />
 						<PrivateRouter path="/create/note" component={NoteDetail} />
 					</Switch>
 				</Router>

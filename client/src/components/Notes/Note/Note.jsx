@@ -8,11 +8,11 @@ import {
 } from '@material-ui/core';
 import { FavoriteBorder, Delete } from '@material-ui/icons';
 import { createMuiTheme } from '@material-ui/core/styles';
+import { useHistory } from 'react-router-dom';
 
-const Note = ({ styles, action }) => {
-	const openNote = () => {
-		console.log('Open Note!!!');
-	};
+const Note = React.memo(({ styles, action, ...info }) => {
+	const history = useHistory();
+	const openNote = () => history.push(`/note/${info.url_id}`);
 
 	return (
 		<Grid container direction="row" className={styles.rootNote}>
@@ -20,10 +20,10 @@ const Note = ({ styles, action }) => {
 				<CardActionArea className={styles.cardActionArea} onClick={openNote}>
 					<Box boxShadow={5} className={styles.box}>
 						<Typography variant="h5" gutterBottom color="textSecondary">
-							This is the title note
+							{info.title}
 						</Typography>
 						<Typography variant="caption">
-							{new Date().toLocaleDateString()}
+							{new Date(info.created).toLocaleDateString()}
 						</Typography>
 					</Box>
 				</CardActionArea>
@@ -48,7 +48,7 @@ const Note = ({ styles, action }) => {
 			)}
 		</Grid>
 	);
-};
+});
 
 export const themeNote = createMuiTheme({
 	overrides: {

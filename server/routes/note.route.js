@@ -10,5 +10,7 @@ router.post(
 	noteValid.validateCreateNote,
 	noteController.createNote
 );
+router.get('/note/:url_id', noteController.getNoteById);
+router.get('/get-all', userAuth.authUser, noteController.getAll);
 
 module.exports = router;
