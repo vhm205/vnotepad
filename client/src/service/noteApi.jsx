@@ -3,17 +3,22 @@ import api from './api';
 class NoteAPI {
 	constructor(token) {
 		api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-		api.defaults.baseURL = 'http://localhost:1002/notes';
 	}
 
 	createNote(data) {
-		return api.post('/create', data);
+		return api.post('/notes/create', data);
 	}
 	getAll() {
-		return api.get('/get-all');
+		return api.get('/notes/get-all');
+	}
+	updateNote(data) {
+		return api.patch('/notes/update-note', data);
+	}
+	deleteNote(params) {
+		return api.get('/notes/delete-note', { params });
 	}
 	static getNoteById(url_id) {
-		return api.get(`/note/${url_id}`);
+		return api.get(`/notes/note/${url_id}`);
 	}
 }
 

@@ -6,18 +6,22 @@ export const setExpiresCookies = (exdays) => {
 	return date;
 };
 
-export const alertInfo = (
+export const AlertCustom = (
 	title,
 	text,
 	icon = 'info',
 	showConfirmButton = false,
-	timer = 1500
+	showCancelButton = false,
+	confirmText = 'Ok',
+	cancelText = 'Cancel'
 ) => {
 	return Swal.fire({
 		icon: icon,
 		title: title,
 		text: text,
 		showConfirmButton: showConfirmButton,
-		timer: timer,
+		showCancelButton: showCancelButton,
+		confirmButtonText: confirmText,
+		cancelButtonText: cancelText,
 	});
 };

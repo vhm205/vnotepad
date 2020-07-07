@@ -19,8 +19,8 @@ import { useNotesStyles, useCustom } from '../../../style';
 import { useCookies } from 'react-cookie';
 import { UserContext } from '../../../context/UserContext';
 import NoteAPI from '../../../service/noteApi';
-import ModalProtected from './Modal/ModalProtected';
-import Notify from './Notify/Notify';
+import ModalProtected from '../Modal/ModalProtected';
+import Notify from '../Notify/Notify';
 
 const NoteDetail = () => {
 	const styles = useNotesStyles();
@@ -47,6 +47,8 @@ const NoteDetail = () => {
 		if (url_id) {
 			(async () => {
 				const response = await NoteAPI.getNoteById(url_id);
+				if (!response.owner) return history.push('/create/note');
+
 				setTitle(response.title);
 				setContent(response.content);
 				setLink(`${config.BASE_URL}/note/${response.url_id}`);
@@ -59,27 +61,36 @@ const NoteDetail = () => {
 	}, [url_id]);
 
 	const onSave = async () => {
+		setLoading(true);
+
 		try {
-			setLoading(true);
-			const newNote = {
-				url_id: shortId.generate(),
+			const items = {
+				url_id: url_id ? url_id : shortId.generate(),
 				title: title,
 				content: content,
 				access: permission.access,
 				owner: user.email,
 				protected: permission.access === 'password' ? permission.protected : '',
 			};
-			const response = await noteApi.createNote(newNote);
-			history.push(`/note/${response.url_id}`);
+			if (url_id) {
+				const response = await noteApi.updateNote(items);
+				setNotify({
+					type: response.status ? 'success' : 'warning',
+					message: response.msg,
+				});
+			} else {
+				const response = await noteApi.createNote(items);
+				history.push(`/note/${response.url_id}`);
+			}
 		} catch (error) {
 			if (error.response) {
 				setNotify({ type: 'error', message: error.response.data.msg });
 			} else {
 				setNotify({ type: 'error', message: error.message });
 			}
-		} finally {
-			setLoading(false);
 		}
+
+		setLoading(false);
 	};
 
 	return (

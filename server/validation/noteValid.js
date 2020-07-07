@@ -14,7 +14,7 @@ const schema = Joi.object({
 	url_id: Joi.string().required(),
 });
 
-module.exports.validateCreateNote = async (req, res, next) => {
+module.exports.validateNote = async (req, res, next) => {
 	try {
 		await schema.validateAsync(req.body);
 		next();

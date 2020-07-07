@@ -36,11 +36,17 @@ NoteSchema.statics = {
 	createNew(items) {
 		return this.create(items);
 	},
+	updateNote(owner, url_id, items) {
+		return this.updateOne({ owner: owner, url_id: url_id }, { $set: items });
+	},
+	deleteNote(owner, url_id) {
+		return this.deleteOne({ owner: owner, url_id: url_id });
+	},
 	getNoteById(url_id) {
 		return this.findOne({ url_id: url_id });
 	},
-	getAll() {
-		return this.find({});
+	getAll(owner) {
+		return this.find({ owner: owner });
 	},
 };
 

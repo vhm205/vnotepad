@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
 	Dialog,
 	DialogTitle,
@@ -13,24 +13,15 @@ import {
 
 const ModalProtected = React.memo(
 	({ open, permission, setPermission, handleClose }) => {
-		const [password, setPassword] = useState('');
-		const [isPassword, setIsPassword] = useState(false);
-		const [error, setError] = useState('');
-
-		const changePermission = (e) => {
-			const value = e.target.value;
-			value === 'password' ? setIsPassword(true) : setIsPassword(false);
-			setPermission({ access: value });
-		};
+		const [error, setError] = React.useState('');
 
 		const onClose = () => {
-			if (isPassword && !password) {
+			if (permission.access === 'password' && !permission.protected) {
 				setError('Your need enter password');
 				return;
 			}
 
 			setError('');
-			setPermission((value) => ({ ...value, protected: password }));
 			handleClose();
 		};
 
@@ -38,7 +29,12 @@ const ModalProtected = React.memo(
 			<Dialog open={open} onClose={onClose}>
 				<DialogTitle>Protect your note</DialogTitle>
 				<DialogContent>
-					<RadioGroup value={permission.access} onChange={changePermission}>
+					<RadioGroup
+						value={permission.access}
+						onChange={(e) =>
+							setPermission((val) => ({ ...val, access: e.target.value }))
+						}
+					>
 						<FormControlLabel
 							label="Public Note"
 							control={<Radio value="public" />}
@@ -56,9 +52,12 @@ const ModalProtected = React.memo(
 						variant="standard"
 						error={!!error}
 						helperText={error}
-						disabled={!isPassword && !permission.protected}
+						disabled={permission.access !== 'password'}
 						value={permission.protected}
-						onChange={(e) => setPassword(e.target.value)}
+						onChange={(e) => {
+							e.persist();
+							setPermission((val) => ({ ...val, protected: e.target.value }));
+						}}
 					/>
 				</DialogContent>
 				<DialogActions>

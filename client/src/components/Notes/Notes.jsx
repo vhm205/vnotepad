@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import { useCustom } from '../../style/CommonStyles';
 import { useNotesStyles } from '../../style';
+import { AlertCustom } from '../../helper';
 import NoteAPI from '../../service/noteApi';
 import Note from './Note/Note';
 
@@ -24,11 +25,32 @@ const Notes = () => {
 			const response = await noteApi.getAll();
 			setNotes(response);
 		})();
-	}, [noteApi]);
+	}, []);
 
 	const onAdd = () => history.push('/create/note');
 	const onDelete = () => setAction('delete');
 	const onFavorite = () => setAction('favorite');
+
+	const deleteNote = (url_id) => {
+		try {
+			AlertCustom(
+				'Do you want to delete it?',
+				'You cannot recover it',
+				'question',
+				true,
+				true,
+				'Yes',
+				'No'
+			).then(async (response) => {
+				if (response.isConfirmed) {
+					await noteApi.deleteNote({ url_id });
+					setNotes((val) => val.filter((note) => note.url_id !== url_id));
+				}
+			});
+		} catch (error) {
+			console.error(error, error.response, error.message);
+		}
+	};
 
 	return (
 		<Paper className={styles.paper}>
@@ -57,7 +79,13 @@ const Notes = () => {
 			<Grid container direction="column">
 				{notes &&
 					notes.map((note) => (
-						<Note key={note._id} styles={styles} action={action} {...note} />
+						<Note
+							key={note._id}
+							styles={styles}
+							action={action}
+							onDelete={deleteNote}
+							{...note}
+						/>
 					))}
 			</Grid>
 		</Paper>

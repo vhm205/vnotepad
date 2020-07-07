@@ -7,9 +7,16 @@ const { noteValid } = require('../validation');
 router.post(
 	'/create',
 	userAuth.authUser,
-	noteValid.validateCreateNote,
+	noteValid.validateNote,
 	noteController.createNote
 );
+router.patch(
+	'/update-note',
+	userAuth.authUser,
+	noteValid.validateNote,
+	noteController.updateNote
+);
+router.get('/delete-note', userAuth.authUser, noteController.deleteNote);
 router.get('/note/:url_id', noteController.getNoteById);
 router.get('/get-all', userAuth.authUser, noteController.getAll);
 
