@@ -52,7 +52,7 @@ userSchema.methods = {
 	},
 	async generateToken() {
 		const token = await jwt.sign({ _id: this._id }, process.env.JWT_KEY, {
-			expiresIn: '10m',
+			expiresIn: '1h',
 		});
 		return token;
 	},

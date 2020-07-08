@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Paper, Grid } from '@material-ui/core';
+import { Paper, Grid, TablePagination } from '@material-ui/core';
 import { Add, Favorite, Delete } from '@material-ui/icons';
 import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@material-ui/lab';
 import { useHistory } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import { useCustom } from '../../style/CommonStyles';
 import { useNotesStyles } from '../../style';
-import { AlertCustom } from '../../helper';
+import { AlertCustom, Unauthorized } from '../../helper';
 import NoteAPI from '../../service/noteApi';
 import Note from './Note/Note';
 
@@ -18,14 +18,25 @@ const Notes = () => {
 	const [open, setOpen] = useState(false);
 	const [action, setAction] = useState('');
 	const [notes, setNotes] = useState([]);
+	const [pagination, setPagination] = useState({
+		_page: 1,
+		_limit: 5,
+		_totalRows: 0,
+	});
 	const noteApi = new NoteAPI(cookies.token);
 
 	React.useEffect(() => {
 		(async () => {
-			const response = await noteApi.getAll();
-			setNotes(response);
+			try {
+				const response = await noteApi.getAll(pagination);
+				setPagination(response.pagination);
+				setNotes(response.notes);
+			} catch (error) {
+				console.error(error, error.response, error.message);
+				Unauthorized(error);
+			}
 		})();
-	}, []);
+	}, [pagination._page]);
 
 	const onAdd = () => history.push('/create/note');
 	const onDelete = () => setAction('delete');
@@ -33,15 +44,16 @@ const Notes = () => {
 
 	const deleteNote = (url_id) => {
 		try {
-			AlertCustom(
-				'Do you want to delete it?',
-				'You cannot recover it',
-				'question',
-				true,
-				true,
-				'Yes',
-				'No'
-			).then(async (response) => {
+			AlertCustom({
+				title: 'Do you want to delete it?',
+				text: 'You cannot recover it',
+				icon: 'question',
+				showConfirmButton: true,
+				showCancelButton: true,
+				confirmText: 'Yes',
+				cancelText: 'No',
+				allowOutsideClick: true,
+			}).then(async (response) => {
 				if (response.isConfirmed) {
 					await noteApi.deleteNote({ url_id });
 					setNotes((val) => val.filter((note) => note.url_id !== url_id));
@@ -77,7 +89,7 @@ const Notes = () => {
 				/>
 			</SpeedDial>
 			<Grid container direction="column">
-				{notes &&
+				{notes.length &&
 					notes.map((note) => (
 						<Note
 							key={note._id}
@@ -87,6 +99,29 @@ const Notes = () => {
 							{...note}
 						/>
 					))}
+				<TablePagination
+					component="div"
+					count={pagination._totalRows}
+					page={pagination._page - 1}
+					rowsPerPage={pagination._limit}
+					rowsPerPageOptions={[
+						5,
+						10,
+						25,
+						50,
+						{ label: 'All', value: pagination._totalRows },
+					]}
+					onChangePage={(_, newPage) =>
+						setPagination((val) => ({ ...val, _page: newPage + 1 }))
+					}
+					onChangeRowsPerPage={(e) =>
+						setPagination((val) => ({
+							...val,
+							_page: 1,
+							_limit: e.target.value,
+						}))
+					}
+				/>
 			</Grid>
 		</Paper>
 	);

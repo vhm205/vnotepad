@@ -27,7 +27,7 @@ export const UserProvider = ({ children }) => {
 				}
 			}
 		})();
-	}, [cookies.token, cookies.refreshToken, setCookie, removeCookie]);
+	}, [cookies.token]);
 
 	return (
 		<UserContext.Provider value={[user, setUser]}>

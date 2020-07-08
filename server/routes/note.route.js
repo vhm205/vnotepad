@@ -17,7 +17,7 @@ router.patch(
 	noteController.updateNote
 );
 router.get('/delete-note', userAuth.authUser, noteController.deleteNote);
-router.get('/note/:url_id', noteController.getNoteById);
 router.get('/get-all', userAuth.authUser, noteController.getAll);
+router.get('/note/:url_id', noteController.getNoteById);
 
 module.exports = router;

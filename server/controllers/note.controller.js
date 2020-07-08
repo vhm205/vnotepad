@@ -35,9 +35,25 @@ const getNoteById = async (req, res) => {
 
 const getAll = async (req, res) => {
 	try {
-		const { user } = res.locals.body;
-		const allNotes = await NoteModel.getAll(user.email);
-		return res.status(200).json(allNotes);
+		const {
+			user: { email },
+		} = res.locals.body;
+		let _page = +req.query._page;
+		let _limit = +req.query._limit;
+		let _totalRows = +req.query._totalRows;
+
+		if (_page === 0) _page = 1;
+		const _skip = _page * _limit - _limit;
+
+		if (_totalRows === 0) {
+			_totalRows = await NoteModel.countNote(email);
+		}
+		const allNotes = await NoteModel.getAll(email, _skip, _limit);
+
+		return res.status(200).json({
+			notes: allNotes,
+			pagination: { _page, _limit, _totalRows },
+		});
 	} catch (error) {
 		return res.status(400).json(error);
 	}

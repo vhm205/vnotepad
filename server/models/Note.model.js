@@ -29,7 +29,7 @@ const NoteSchema = new mongoose.Schema({
 		required: true,
 	},
 	created: { type: Number, default: Date.now },
-	updated: { type: Number, default: null },
+	updated: { type: Number, default: Date.now },
 });
 
 NoteSchema.statics = {
@@ -45,8 +45,14 @@ NoteSchema.statics = {
 	getNoteById(url_id) {
 		return this.findOne({ url_id: url_id });
 	},
-	getAll(owner) {
-		return this.find({ owner: owner });
+	getAll(owner, skip, limit) {
+		return this.find({ owner: owner })
+			.sort({ updated: 1 })
+			.skip(skip)
+			.limit(limit);
+	},
+	countNote(owner) {
+		return this.countDocuments({ owner: owner });
 	},
 };
 

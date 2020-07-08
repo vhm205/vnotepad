@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import shortId from 'shortid';
 import { Editor } from '@tinymce/tinymce-react';
 import { config } from '../../../config';
@@ -43,7 +43,7 @@ const NoteDetail = () => {
 	});
 	const noteApi = new NoteAPI(cookies.token);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (url_id) {
 			(async () => {
 				const response = await NoteAPI.getNoteById(url_id);
@@ -56,9 +56,15 @@ const NoteDetail = () => {
 					access: response.access,
 					protected: response.protected,
 				});
+				sessionStorage.setItem('content', response.content);
 			})();
 		}
 	}, [url_id]);
+
+	useEffect(() => {
+		const content = sessionStorage.getItem('content');
+		setContent(content);
+	}, [useRichTextBox]);
 
 	const onSave = async () => {
 		setLoading(true);
@@ -113,15 +119,21 @@ const NoteDetail = () => {
 					style={{ width: '100%', height: 500 }}
 					rows={1000}
 					defaultValue={content}
-					onChange={(e) => setContent(e.target.value)}
+					onChange={(e) => {
+						setContent(e.target.value);
+						sessionStorage.setItem('content', e.target.value);
+					}}
 				/>
 			) : (
 				<Editor
 					apiKey="mnhe8mkhfadk24d7pbtvd880370fc3jyxr34fxx0csiks0gt"
 					init={initEditor}
 					className={custom.mb}
-					defaultValue={content}
-					onEditorChange={(content, editor) => setContent(content)}
+					value={content}
+					onEditorChange={(content, editor) => {
+						setContent(content);
+						sessionStorage.setItem('content', content);
+					}}
 				/>
 			)}
 			<Grid container direction="row" className={custom.mt}>

@@ -8,8 +8,8 @@ class NoteAPI {
 	createNote(data) {
 		return api.post('/notes/create', data);
 	}
-	getAll() {
-		return api.get('/notes/get-all');
+	getAll(params) {
+		return api.get('/notes/get-all', { params });
 	}
 	updateNote(data) {
 		return api.patch('/notes/update-note', data);
