@@ -14,6 +14,9 @@ class NoteAPI {
 	updateNote(data) {
 		return api.patch('/notes/update-note', data);
 	}
+	updateFavorite(params) {
+		return api.get('/notes/update-favorite', { params });
+	}
 	deleteNote(params) {
 		return api.get('/notes/delete-note', { params });
 	}

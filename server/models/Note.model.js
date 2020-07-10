@@ -28,6 +28,10 @@ const NoteSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	isFavorite: {
+		type: Boolean,
+		default: false,
+	},
 	created: { type: Number, default: Date.now },
 	updated: { type: Number, default: Date.now },
 });
@@ -47,12 +51,18 @@ NoteSchema.statics = {
 	},
 	getAll(owner, skip, limit) {
 		return this.find({ owner: owner })
-			.sort({ updated: 1 })
+			.sort({ updated: -1 })
 			.skip(skip)
 			.limit(limit);
 	},
 	countNote(owner) {
 		return this.countDocuments({ owner: owner });
+	},
+	updateFavorite(owner, url_id, isFavorite) {
+		return this.updateOne(
+			{ owner: owner, url_id: url_id },
+			{ $set: { isFavorite: isFavorite } }
+		);
 	},
 };
 

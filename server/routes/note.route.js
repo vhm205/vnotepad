@@ -16,6 +16,11 @@ router.patch(
 	noteValid.validateNote,
 	noteController.updateNote
 );
+router.get(
+	'/update-favorite',
+	userAuth.authUser,
+	noteController.updateFavorite
+);
 router.get('/delete-note', userAuth.authUser, noteController.deleteNote);
 router.get('/get-all', userAuth.authUser, noteController.getAll);
 router.get('/note/:url_id', noteController.getNoteById);

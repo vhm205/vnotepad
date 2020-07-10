@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import { useCustom } from '../../style/CommonStyles';
 import { useNotesStyles } from '../../style';
-import { AlertCustom, Unauthorized } from '../../helper';
+import { Unauthorized } from '../../helper';
 import NoteAPI from '../../service/noteApi';
 import Note from './Note/Note';
 
@@ -32,37 +32,17 @@ const Notes = () => {
 				setPagination(response.pagination);
 				setNotes(response.notes);
 			} catch (error) {
-				console.error(error, error.response, error.message);
 				Unauthorized(error);
 			}
 		})();
 	}, [pagination._page]);
 
-	const onAdd = () => history.push('/create/note');
+	const onAdd = () => {
+		sessionStorage.removeItem('content');
+		history.push('/create/note');
+	};
 	const onDelete = () => setAction('delete');
 	const onFavorite = () => setAction('favorite');
-
-	const deleteNote = (url_id) => {
-		try {
-			AlertCustom({
-				title: 'Do you want to delete it?',
-				text: 'You cannot recover it',
-				icon: 'question',
-				showConfirmButton: true,
-				showCancelButton: true,
-				confirmText: 'Yes',
-				cancelText: 'No',
-				allowOutsideClick: true,
-			}).then(async (response) => {
-				if (response.isConfirmed) {
-					await noteApi.deleteNote({ url_id });
-					setNotes((val) => val.filter((note) => note.url_id !== url_id));
-				}
-			});
-		} catch (error) {
-			console.error(error, error.response, error.message);
-		}
-	};
 
 	return (
 		<Paper className={styles.paper}>
@@ -93,9 +73,10 @@ const Notes = () => {
 					notes.map((note) => (
 						<Note
 							key={note._id}
+							api={noteApi}
 							styles={styles}
 							action={action}
-							onDelete={deleteNote}
+							setNotes={setNotes}
 							{...note}
 						/>
 					))}

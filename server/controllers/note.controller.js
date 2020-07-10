@@ -87,10 +87,25 @@ const updateNote = async (req, res) => {
 	}
 };
 
+const updateFavorite = async (req, res) => {
+	try {
+		const {
+			user: { email },
+		} = res.locals.body;
+		const { isFavorite, url_id } = req.query;
+		await NoteModel.updateFavorite(email, url_id, isFavorite);
+
+		return res.sendStatus(204);
+	} catch (error) {
+		return res.status(400).json(error);
+	}
+};
+
 module.exports = {
 	createNote,
 	getNoteById,
 	getAll,
 	updateNote,
 	deleteNote,
+	updateFavorite,
 };
