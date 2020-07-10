@@ -15,6 +15,7 @@ const NavBar = () => {
 			await UserAPI.logout(refreshToken);
 			removeCookie('token');
 			removeCookie('refreshToken');
+			localStorage.removeItem('refreshToken');
 		}
 	};
 

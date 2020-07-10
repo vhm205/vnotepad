@@ -6,12 +6,51 @@ import {
 	CardActionArea,
 	Button,
 } from '@material-ui/core';
-import { FavoriteBorder, Delete } from '@material-ui/icons';
+import { FavoriteBorder, Favorite, Delete } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
+import { AlertCustom } from '../../../helper';
 
-const Note = React.memo(({ styles, action, onDelete, ...info }) => {
+const Note = React.memo(({ styles, action, api, setNotes, ...info }) => {
 	const history = useHistory();
+	const [favorite, setFavorite] = React.useState(false);
+
+	React.useEffect(() => {
+		setFavorite(info.isFavorite);
+	}, [info.isFavorite]);
+
 	const openNote = () => history.push(`/note/${info.url_id}`);
+
+	const handleFavorite = async () => {
+		try {
+			await api.updateFavorite({
+				isFavorite: !favorite,
+				url_id: info.url_id,
+			});
+			setFavorite((val) => !val);
+		} catch {}
+	};
+
+	const handleDelete = () => {
+		try {
+			AlertCustom({
+				title: 'Do you want to delete it?',
+				text: 'You cannot recover it',
+				icon: 'question',
+				showConfirmButton: true,
+				showCancelButton: true,
+				confirmText: 'Yes',
+				cancelText: 'No',
+				allowOutsideClick: true,
+			}).then(async (response) => {
+				if (response.isConfirmed) {
+					await api.deleteNote({ url_id: info.url_id });
+					setNotes((val) => val.filter((note) => note.url_id !== info.url_id));
+				}
+			});
+		} catch (error) {
+			console.error(error, error.response, error.message);
+		}
+	};
 
 	return (
 		<Grid container direction="row" className={styles.rootNote}>
@@ -29,8 +68,16 @@ const Note = React.memo(({ styles, action, onDelete, ...info }) => {
 			</Grid>
 			{action === 'favorite' && (
 				<Grid item>
-					<Button variant="contained" className={styles.btnNote}>
-						<FavoriteBorder fontSize="large" />
+					<Button
+						variant="contained"
+						className={styles.btnNote}
+						onClick={handleFavorite}
+					>
+						{favorite ? (
+							<Favorite fontSize="large" />
+						) : (
+							<FavoriteBorder fontSize="large" />
+						)}
 					</Button>
 				</Grid>
 			)}
@@ -40,7 +87,7 @@ const Note = React.memo(({ styles, action, onDelete, ...info }) => {
 						color="secondary"
 						variant="contained"
 						className={styles.btnNote}
-						onClick={() => onDelete(info.url_id)}
+						onClick={handleDelete}
 					>
 						<Delete fontSize="large" />
 					</Button>
